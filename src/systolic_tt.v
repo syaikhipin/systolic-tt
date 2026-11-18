@@ -13,13 +13,13 @@ module pe_tt (
     reg signed [7:0] weight_reg;
     always @(posedge clk) begin
         if (rst) begin
-            weight_reg <= 0; weight_shift_out <= 0; east_act_out <= 0; south_psum_out <= 0;
+            weight_reg &lt;= 0; weight_shift_out &lt;= 0; east_act_out &lt;= 0; south_psum_out &lt;= 0;
         end else if (pipe_en) begin
             if (weight_load) begin
-                weight_reg <= weight_shift_in; weight_shift_out <= weight_shift_in;
+                weight_reg &lt;= weight_shift_in; weight_shift_out &lt;= weight_shift_in;
             end else begin
-                east_act_out <= west_act_in;
-                south_psum_out <= north_psum_in + (west_act_in * weight_reg);
+                east_act_out &lt;= west_act_in;
+                south_psum_out &lt;= north_psum_in + (west_act_in * weight_reg);
             end
         end
     end
@@ -37,13 +37,13 @@ module pe_array_tt (
     wire signed [7:0] wshift [0:2][0:1];
     genvar r, c;
     generate
-        for (c = 0; c < 2; c = c + 1) begin : COL
+        for (c = 0; c &lt; 2; c = c + 1) begin : COL
             assign wshift[0][c] = weight_col_in[8*c +: 8];
             assign psum_mid[0][c] = 18'sd0;
         end
-        for (r = 0; r < 2; r = r + 1) begin : ROW
+        for (r = 0; r &lt; 2; r = r + 1) begin : ROW
             assign act_mid[r][0] = act_row_in[8*r +: 8];
-            for (c = 0; c < 2; c = c + 1) begin : CELL
+            for (c = 0; c &lt; 2; c = c + 1) begin : CELL
                 pe_tt pe (.clk(clk), .rst(rst), .pipe_en(pipe_en), .weight_load(weight_load),
                     .weight_shift_in(wshift[r][c]), .weight_shift_out(wshift[r+1][c]),
                     .west_act_in(act_mid[r][c]), .east_act_out(act_mid[r][c+1]),
@@ -74,13 +74,13 @@ module systolic_tt_top (
     assign act_ready = (state==S_STREAM) && !out_blocked;
     assign weights_loaded = (state==S_STREAM);
     always @(posedge clk) begin
-        if (rst) state <= S_LOAD;
-        else if (load_fire && weight_last) state <= S_STREAM;
+        if (rst) state &lt;= S_LOAD;
+        else if (load_fire && weight_last) state &lt;= S_STREAM;
     end
     // Skew: row 0 no delay, row 1 delayed 1 cycle
     reg signed [7:0] skew1;
     always @(posedge clk) begin
-        if (rst) skew1 <= 0; else if (pipe_en) skew1 <= act_data[15:8];
+        if (rst) skew1 &lt;= 0; else if (pipe_en) skew1 &lt;= act_data[15:8];
     end
     wire [15:0] act_row_in = {skew1, act_data[7:0]};
     wire [35:0] psum_col_out;
@@ -89,7 +89,7 @@ module systolic_tt_top (
     // Deskew: col 0 delayed 1, col 1 no delay
     reg signed [17:0] desk0;
     always @(posedge clk) begin
-        if (rst) desk0 <= 0; else if (pipe_en) desk0 <= psum_col_out[17:0];
+        if (rst) desk0 &lt;= 0; else if (pipe_en) desk0 &lt;= psum_col_out[17:0];
     end
     wire signed [17:0] deskewed [0:1];
     assign deskewed[0] = desk0;
@@ -97,17 +97,17 @@ module systolic_tt_top (
     // Saturate 18-bit -> INT8 (no wraparound)
     function signed [7:0] sat8; input signed [17:0] v; begin
         if (v > 18'sd127) sat8 = 8'sd127;
-        else if (v < -18'sd128) sat8 = -8'sd128;
+        else if (v &lt; -18'sd128) sat8 = -8'sd128;
         else sat8 = v[7:0];
     end endfunction
     assign result_data = {sat8(deskewed[1]), sat8(deskewed[0])};
     // Valid / last tracking
     reg [LATENCY-1:0] valid_sr, last_sr;
     always @(posedge clk) begin
-        if (rst) begin valid_sr <= 0; last_sr <= 0; end
+        if (rst) begin valid_sr &lt;= 0; last_sr &lt;= 0; end
         else if (pipe_en) begin
-            valid_sr <= {valid_sr[LATENCY-2:0], act_fire};
-            last_sr  <= {last_sr[LATENCY-2:0], act_fire && act_last};
+            valid_sr &lt;= {valid_sr[LATENCY-2:0], act_fire};
+            last_sr  &lt;= {last_sr[LATENCY-2:0], act_fire && act_last};
         end
     end
     assign result_valid = valid_sr[LATENCY-1];
