@@ -1,8 +1,8 @@
 # Systolic-TT — 2×2 INT8 weight-stationary systolic array
 
-PERURI Chip Hackathon 2026 submission (AI / Edge Accelerator theme), implemented
-and simulation-verified in the Sandbox Chip Merah Putih
-(https://chip.peruri.co.id/simulator), project `Systolic-TT-2x2-INT8`.
+A simple Verilog simulation of a small systolic array, run in the
+Sandbox Chip Merah Putih (https://chip.peruri.co.id/simulator),
+project `Systolic-TT-2x2-INT8`.
 
 ## Design
 
@@ -40,5 +40,4 @@ multi-file layout for the synthesis pipeline (iverilog / Yosys / OpenLane).
 ## Provenance
 
 Adapted from the open-source `smitarekar/systolic-mm-accelerator` (MIT) —
-a 4×4 Q8.8 weight-stationary array — scoped down to 2×2 INT8 for the tile /
-pin budget, as described in the hackathon proposal.
+a 4×4 Q8.8 weight-stationary array — scoped down to 2×2 INT8.
